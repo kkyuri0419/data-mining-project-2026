@@ -68,3 +68,52 @@ all_channels <- all_channels %>%
   distinct(channel_id, .keep_all = TRUE)
 
 View(all_channels)
+
+
+
+# 02 Channel Filtering ----------------------------------------------------
+
+# Function to get channel statistics (like subscriber count) for a list of channel IDs
+get_channel_stats <- function(channel_ids) {
+  
+  # YouTube API allows a maximum of 50 channel IDs per request, so we need to split the list into chunks
+  channel_ids <- unique(channel_ids)
+  chunks <- split(channel_ids, ceiling(seq_along(channel_ids) / 50))
+  
+  all_stats <- lapply(chunks, function(chunk){
+    res <- GET(
+      url = "https://www.googleapis.com/youtube/v3/channels",
+      query = list(
+        part = "statistics",
+        id = paste(chunk, collapse = ","),
+        key = api_key
+      )
+    )
+    
+    data <- fromJSON(content(res, "text"), flatten = TRUE)
+    
+    df <- data.frame(
+      channel_id = data$items$id,
+      subscribers = as.numeric(data$items$statistics.subscriberCount)
+    )
+  })
+  
+  bind_rows(all_stats)
+}
+
+# Get channel statistics for all collected channels and merge with the main data frame
+
+stats <- get_channel_stats(all_channels$channel_id)
+str(stats)
+
+# Merge the statistics back into the main data frame
+all_channels <- all_channels %>%
+  left_join(stats, by = "channel_id")
+
+View(all_channels)
+
+# Filter channels with more than 1 million subscribers
+filtered_channels <- all_channels %>%
+  filter(subscribers >= 1000000)
+
+View(filtered_channels)
