@@ -117,3 +117,34 @@ filtered_channels <- all_channels %>%
   filter(subscribers >= 1000000)
 
 View(filtered_channels)
+
+
+# 03 Manual Labeling of Ideological Category ------------------------------
+
+filtered_channels$ideology <- NA
+
+filtered_channels$ideology[filtered_channels$channel_title %in% c(
+  "Pod Save America",
+  "Democracy Now!",
+  "Majority Report",
+  "David Pakman Show",
+  "The Young Turks",
+  "Secular Talk")] <- "left"
+
+filtered_channels$ideology[filtered_channels$channel_title %in% c(
+  "Newsmax",
+  "Right Side Broadcasting Network",
+  "One America News Network",
+  "Fox News",
+  "Conservative Twins"
+)] <- "right"
+
+filtered_channels$ideology[filtered_channels$channel_title %in% c(
+  "ABC News",
+  "Good Morning America",
+  "NBC News"
+)] <- "center"
+
+View(filtered_channels)
+
+
