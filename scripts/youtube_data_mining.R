@@ -148,3 +148,34 @@ filtered_channels$ideology[filtered_channels$channel_title %in% c(
 View(filtered_channels)
 
 
+# 04 Getting Videos from each Channels ------------------------------------
+
+get_videos <- function(channel_id){
+  res <- GET(
+    "https://www.googleapis.com/youtube/v3/search",
+    query = list(
+      part = "snippet",
+      channelId = channel_id,
+      order = "date",
+      type = "video",
+      maxResults = 20,
+      key = api_key))
+  
+  data <- fromJSON(content(res, "text"), flatten=TRUE)
+  print(data$items)
+  
+  tibble::tibble(
+    video_id = data$items$id.videoId,
+    title = data$items$snippet.title,
+    video_description = data$items$snippet.description,
+  )
+}
+
+library(purrr)
+
+video_data <- filtered_channels %>%
+  filter(ideology == "left" | ideology == "right") %>% # Focus on left and right channels
+  mutate(videos = map(channel_id, get_videos)) %>% # Get videos for each channel
+  unnest(videos) # Unnest the video data into a flat structure
+
+View(video_data)
