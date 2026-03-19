@@ -179,3 +179,24 @@ video_data <- filtered_channels %>%
   unnest(videos) # Unnest the video data into a flat structure
 
 View(video_data)
+getwd()
+write.csv(video_data, "data_preprocessed/video_data.csv", row.names = FALSE)
+
+
+
+
+# 05 Filtering Videos on Issues -------------------------------------------
+
+
+# Create a combined text field for title and description to facilitate keyword searching
+video_data <- video_data %>%
+  mutate(text = paste(title, description))
+
+# keyword detecting testing
+trump_data <- video_data %>%
+  filter(str_detect(text, regex("trump|donald trump", ignore_case = TRUE)))
+View(trump_data)
+
+# Count the number of videos mentioning Trump by ideological category
+trump_data %>%
+  count(ideology)
