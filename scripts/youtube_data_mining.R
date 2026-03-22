@@ -200,3 +200,39 @@ View(trump_data)
 # Count the number of videos mentioning Trump by ideological category
 trump_data %>%
   count(ideology)
+
+
+
+# 06  Text Preprocessing --------------------------------------------------
+
+# Tokenize the text data into individual words for further analysis
+tokens <- trump_data %>%
+  unnest_tokens(word, text)
+# Remove stop words to focus on meaningful content
+tokens <- tokens %>%
+  anti_join(stop_words)
+
+View(tokens)
+
+# Count the frequency of each word by ideological category
+word_counts <- tokens %>%
+  count(ideology, word, sort = TRUE)
+word_counts %>% filter(ideology == "left") %>% head(20)
+word_counts %>% filter(ideology == "right") %>% head(20)
+
+
+
+# 07  Feature Extraction --------------------------------------------------
+
+# Calculate Term Frequency-Inverse Document Frequency (TF-IDF) to identify important words in each ideological category
+tfidf <- tokens %>%
+  count(ideology, word) %>%
+  bind_tf_idf(word, ideology, n) %>%
+  arrange(desc(tf_idf))
+
+View(tfidf)
+
+# View the top 10 words with the highest TF-IDF score for each ideological category
+tfidf %>%
+  group_by(ideology) %>%
+  slice_max(tf_idf, n = 10)
