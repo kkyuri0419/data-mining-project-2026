@@ -190,7 +190,8 @@ write.csv(video_data, "data_preprocessed/video_data.csv", row.names = FALSE)
 
 # Create a combined text field for title and description to facilitate keyword searching
 video_data <- video_data %>%
-  mutate(text = paste(title, description))
+  #  mutate(text = paste(title, description))
+  mutate(text = title) # Use only the title for keyword searching to avoid noise from descriptions
 
 # keyword detecting testing
 trump_data <- video_data %>%
@@ -200,3 +201,56 @@ View(trump_data)
 # Count the number of videos mentioning Trump by ideological category
 trump_data %>%
   count(ideology)
+
+
+
+# 06  Text Preprocessing --------------------------------------------------
+
+# Tokenize the text data into individual words for further analysis
+tokens <- trump_data %>%
+  unnest_tokens(word, text)
+# Remove stop words to focus on meaningful content
+custom_stopwords <- tibble(
+  word = c(
+    "subscribe", "channel", "video", "watch",
+    "patreon", "join", "www", "http", "https",
+    "com", "youtube", "live", "shorts", "amp",
+    "free", "access", "link", "membership", "substack"
+  )
+)
+
+tokens <- tokens %>%
+  anti_join(stop_words, by = "word") %>%
+  anti_join(custom_stopwords, by = "word")
+
+# remove numbers
+tokens <- tokens %>%
+  filter(!str_detect(word, "^[0-9]+$")) %>%
+  filter(!str_detect(word, "(https?://[^\\s]+|www\\.[^\\s]+)")) %>%
+  filter(!str_detect(word, "kyle|kulinski|trump|biden|donald"))
+
+View(tokens)
+
+# Count the frequency of each word by ideological category
+word_counts <- tokens %>%
+  count(ideology, word, sort = TRUE)
+word_counts %>% filter(ideology == "left") %>% head(20)
+word_counts %>% filter(ideology == "right") %>% head(20)
+
+
+
+# 07  Feature Extraction --------------------------------------------------
+
+# Calculate Term Frequency-Inverse Document Frequency (TF-IDF) to identify important words in each ideological category
+tfidf <- tokens %>%
+  count(ideology, word) %>%
+  bind_tf_idf(word, ideology, n) %>%
+  arrange(desc(tf_idf)) # Sort by TF-IDF score in descending order
+
+View(tfidf)
+
+# View the top 10 words with the highest TF-IDF score for each ideological category
+tfidf %>%
+  group_by(ideology) %>%
+  slice_max(tf_idf, n = 10) %>%
+  print (n = 35)
