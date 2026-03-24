@@ -90,3 +90,63 @@ View(channel_pairs)
 
 # 04 Network Construction -------------------------------------------------
 
+# edges
+edges <- channel_pairs %>%
+  filter(similarity > 0.05) %>%
+  rename(from = item1, to = item2, weight = similarity)
+
+nrow(edges)
+summary(edges$weight)
+head(edges)
+
+# make node table
+nodes <- channel_docs %>%
+  select(channel_id, ideology, n_videos) %>%
+  distinct() %>%
+  rename(name = channel_id)
+
+# graph
+g <- graph_from_data_frame(
+  d = edges,
+  vertices = nodes,
+  directed = FALSE
+)
+g
+vcount(g)
+ecount(g)
+
+
+
+# 05 Analysis -------------------------------------------------------------
+
+# Modularity Analysis
+cl <- cluster_louvain(g, weights = E(g)$weight)
+modularity(cl)
+
+# Cross-Ideological Connectivity Analysis
+channel_pairs <- channel_pairs %>%
+  mutate(type = ifelse(ideology1 == ideology2, "same", "cross"))
+
+channel_pairs %>%
+  group_by(type) %>%
+  summarise(avg_similarity = mean(similarity))
+
+
+
+# 06 Visualization --------------------------------------------------------
+
+V(g)$color <- ifelse(V(g)$ideology == "left", "blue", "red")
+
+png("figures/network_plot.png", width = 1200, height = 1000, res = 150)
+
+plot(
+  g,
+  vertex.label = V(g)$name,
+  vertex.color = V(g)$color,
+  vertex.size = 15,
+  vertex.label.cex = 0.8,
+  edge.width = E(g)$weight * 5,
+  layout = layout_with_fr
+)
+
+dev.off()
