@@ -210,6 +210,7 @@ trump_data %>%
 tokens <- trump_data %>%
   unnest_tokens(word, text)
 # Remove stop words to focus on meaningful content
+
 custom_stopwords <- tibble(
   word = c(
     "subscribe", "channel", "video", "watch",
@@ -228,6 +229,7 @@ tokens <- tokens %>%
   filter(!str_detect(word, "^[0-9]+$")) %>%
   filter(!str_detect(word, "(https?://[^\\s]+|www\\.[^\\s]+)")) %>%
   filter(!str_detect(word, "kyle|kulinski|trump|biden|donald"))
+
 
 View(tokens)
 
@@ -254,3 +256,4 @@ tfidf %>%
   group_by(ideology) %>%
   slice_max(tf_idf, n = 10) %>%
   print (n = 35)
+
