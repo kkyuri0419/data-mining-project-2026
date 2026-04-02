@@ -6,7 +6,7 @@ This repository contains the code for a small data mining project developed as p
 
 University of Lucerne
 
-Student Name  
+Student Name : Yuri Kim
 Course: Data Mining for the Social Sciences using R
 Term: Spring 2026
 
@@ -27,7 +27,7 @@ The project should demonstrate:
 *(Replace with your own question)*
 
 Example:
-- How frequently do political speeches contain populist rhetoric?
+- To what extent does political content on YouTube exhibit linguistic, emotional, and structural polarization between progressive and conservative channels?
 
 
 ## Data Source
@@ -36,15 +36,17 @@ Describe the data source here.
 
 Example:
 
-- API: https://example-api.com
-- Documentation: https://example-api.com/docs
+- API: https://developers.google.com/youtube/v3
+- Documentation: https://developers.google.com/youtube/v3/docs?hl=ko
 - Access method: HTTP GET requests
 
 
 ## Repository Structure
 
-/code     scripts used to collect/process data
-/data     output datasets (not tracked/pushed by git)
+/data_preprocessed     data that are preprocessed from the raw data for analysis
+/data_raw               output datasets (not tracked/pushed by git)
+/report               final report and visualizations
+/scripts            R scripts for data collection, cleaning, and analysis
 README.md   project description
 
 
