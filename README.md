@@ -32,9 +32,6 @@ Example:
 
 ## Data Source
 
-Describe the data source here.
-
-Example:
 
 - API: https://developers.google.com/youtube/v3
 - Documentation: https://developers.google.com/youtube/v3/docs?hl=ko
@@ -45,7 +42,8 @@ Example:
 
 /data_preprocessed     data that are preprocessed from the raw data for analysis
 /data_raw               output datasets (not tracked/pushed by git)
-/report               final report and visualizations
+/report               final report
+/figures              visualizations
 /scripts            R scripts for data collection, cleaning, and analysis
 README.md   project description
 
