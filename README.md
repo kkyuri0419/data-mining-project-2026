@@ -6,8 +6,8 @@ This repository contains the code for a small data mining project developed as p
 
 University of Lucerne
 
-Student Name : Yuri Kim
-Course: Data Mining for the Social Sciences using R
+Student Name : Yuri Kim  
+Course: Data Mining for the Social Sciences using R  
 Term: Spring 2026
 
 ## Project Goal
