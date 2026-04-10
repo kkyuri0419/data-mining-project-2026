@@ -20,14 +20,14 @@ client_secret <- credentials$installed$client_secret
 api_key <- credentials$installed$api_key
 
 # Load data
-trump_videos <- read_csv("data_preprocessed/trump_videos.csv")
+trump_data <- read_csv("data_preprocessed/trump_data.csv")
 View(trump_data)
 
 # 02 Define a Function to Retrieve One Page of Top-Level Comments ----
 
 # This function retrieves one page of top-level comments for a single video.
 # It returns both the comments and the next page token for pagination.
-get_video_comments_page <- function(video_id, api_key, page_token = NULL, max_results = 100) {
+get_video_comments_page <- function(video_id, api_key, page_token = NULL, max_results = 30) {
   
   res <- GET(
     "https://www.googleapis.com/youtube/v3/commentThreads",
@@ -82,7 +82,7 @@ get_video_comments_page <- function(video_id, api_key, page_token = NULL, max_re
 
 # This function repeatedly calls the one-page function above
 # until it reaches the requested number of comments or runs out of pages.
-get_video_comments <- function(video_id, api_key, max_comments = 50) {
+get_video_comments <- function(video_id, api_key, max_comments = 30) {
   
   all_comments <- list()
   next_token <- NULL
@@ -184,6 +184,8 @@ video_docs <- video_comments_full %>%
 glimpse(video_docs)
 View(video_docs)
 
+write_csv(video_docs, "data_preprocessed/video_doc_comments_trump.csv")
+
 # 08 Build Channel-Level Documents ----
 
 # In this step, each channel becomes one document by combining the text
@@ -205,15 +207,13 @@ View(video_docs)
 # 09 Tokenize the Text Data ----
 
 # Tokenize the video-level text into individual words.
-tokens_unigram <- video_docs %>%
+unigram_tokens_with_keyword <- video_docs %>%
   unnest_tokens(word, text) # unigram
 
 # Tokenize the video-level text into 2 words.  
-tokens <- video_docs %>%
+bigram_tokens_with_keyword <- video_docs %>%
   unnest_tokens(bigram, text, token = "ngrams", n = 2) # Try bigrams (2 words) instead of unigrams (individual word) to capture more context  
 
-glimpse(tokens)
-View(tokens)
 
 # Remove common stop words and keep alphabetic tokens only.
 # This reduces noise in the text analysis.
@@ -230,11 +230,12 @@ custom_stopwords <- tibble::tibble(
     "kyle", "kulinski|", "biden", "donald", "kulinski", 
     "president", "adam", "dave", "pbd", "afroman", "jon",
     "murphy", "stewart", "josh", "jon stewart", "dave smith",
-    "fox news"
+    "fox news", "melania","graham platner", "bill maher", "epstein files",
+    "amerika serikat", "bill", "maher"
   )
 )
 
-tokens_clean <- tokens %>%
+bigram_tokens_clean_with_keyword <- bigram_tokens_with_keyword %>%
   separate(bigram, into = c("word1", "word2"), sep = " ") %>%
   filter(!word1 %in% stop_words$word,
          !word2 %in% stop_words$word) %>%
@@ -245,21 +246,23 @@ tokens_clean <- tokens %>%
   unite(word, word1, word2, sep = " ") %>% 
   filter(!word %in% custom_stopwords$word)
 
-tokens_unigram_clean <- tokens_unigram %>%
+unigram_tokens_clean_with_keyword <- unigram_tokens_with_keyword %>%
   anti_join(stop_words, by = "word") %>% # unigram
   anti_join(custom_stopwords, by = "word") %>% # unigram
   filter(str_detect(word, "[a-z]")) # unigram
 
 # filtering out bigrams that appear less than 5 times across the entire corpus to reduce noise
-bigram_keep <- tokens_clean %>%
+bigram_keep <- bigram_tokens_clean_with_keyword %>%
   count(word, sort = TRUE) %>%
   filter(n >= 5) %>%
   pull(word)
-tokens_clean <- tokens_clean %>%
+bigram_tokens_clean_with_keyword <- bigram_tokens_clean_with_keyword %>%
   filter(word %in% bigram_keep)
 
-glimpse(tokens_clean)
-View(tokens_clean)
+# filtering out bigrams that appear in only one channel to focus on more widely used bigrams
+bigram_tokens_clean_with_keyword %>%
+  group_by(word) %>%
+  filter(n_distinct(channel_id) >= 2)
 
 
 
@@ -290,16 +293,31 @@ View(tokens_clean)
 #  print (n = 35)
 
 # Count how often each word appears within each ideology
-ideology_word_counts <- tokens_clean %>%
+ideology_word_counts_unigram <- unigram_tokens_clean_with_keyword %>%
+  count(ideology, word, sort = TRUE)
+
+ideology_word_counts_bigram <- bigram_tokens_clean_with_keyword %>%
   count(ideology, word, sort = TRUE)
 
 # Compute TF-IDF using ideology as document
-ideology_tfidf <- ideology_word_counts %>%
+ideology_tfidf_unigram <- ideology_word_counts_unigram %>%
   bind_tf_idf(term = word, document = ideology, n = n) %>%
   arrange(desc(tf_idf))
 
+ideology_tfidf_bigram <- ideology_word_counts_bigram %>%
+  bind_tf_idf(term = word, document = ideology, n = n) %>%
+  arrange(desc(tf_idf))
+
+write_csv(ideology_tfidf_unigram, "data_analysis/trump_title_comments/trump_comments_tfidf_unigram.csv")
+write_csv(ideology_tfidf_bigram, "data_analysis/trump_title_comments/trump_comments_tfidf_bigram.csv")
+
 # View top words per ideology
-ideology_tfidf %>% 
+ideology_tfidf_unigram %>% 
+  group_by(ideology) %>%
+  slice_max(tf_idf, n = 10) %>%
+  print(n = 35)
+
+ideology_tfidf_bigram %>% 
   group_by(ideology) %>%
   slice_max(tf_idf, n = 10) %>%
   print(n = 35)
@@ -310,9 +328,9 @@ ideology_tfidf %>%
 # Use a lexicon-based approach to compare positive and negative emotional language across ideological groups.
 bing <- get_sentiments("bing")
 
-sentiment_scores <- tokens_unigram_clean %>%
+sentiment_scores <- unigram_tokens_clean_with_keyword %>%
   inner_join(bing, by = "word") %>%
   count(ideology, sentiment)
 
 View(sentiment_scores)
-write_csv(sentiment_scores, "data_preprocessed/sentiment_scores.csv")
+write_csv(sentiment_scores, "data_analysis/trump_title_comments/trump_title_commments_sentiment_scores.csv")
