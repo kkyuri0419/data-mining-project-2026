@@ -24,10 +24,11 @@ The project should demonstrate:
 
 ## Research Question
 
-*(Replace with your own question)*
+- RQ1. Do ideologically distinct YouTube channels exhibit systematic differences in their language use when discussing a shared political issue?
+This question focuses on identifying semantic and emotional variation across channels, examining whether differences in vocabulary, phrasing, and sentiment reflect underlying ideological positions.
 
-Example:
-- To what extent does political content on YouTube exhibit linguistic, emotional, and structural polarization between progressive and conservative channels?
+- RQ2. Do these linguistic differences correspond to structural clustering in the channel network?
+This question investigates whether channels that are linguistically similar are also structurally connected, forming ideologically cohesive communities within the network.
 
 
 ## Data Source
@@ -40,12 +41,12 @@ Example:
 
 ## Repository Structure
 
-/data_preprocessed     data that are preprocessed from the raw data for analysis
-/data_raw               output datasets (not tracked/pushed by git)
-/report               final report
-/figures              visualizations
-/scripts            R scripts for data collection, cleaning, and analysis
-README.md   project description
+- /data_preprocessed : data that are preprocessed from the raw data for analysis
+- /data_raw : output datasets (not tracked/pushed by git)
+- /report : final report
+- /figures : visualizations
+- /scripts : R scripts for data collection, cleaning, and analysis
+- README.md : project description
 
 
 ## Reproducibility
@@ -53,8 +54,9 @@ README.md   project description
 To reproduce this project:
 
 1. Clone the repository
-2. Install required R packages
-3. Run the scripts in the `code/` folder
+2. Install required R packages : Version 2026.01.0+392 (2026.01.0+392)
+3. Run the scripts in the `scripts/` folder
+4. 'youtube_data_mining.R' should run from start to finish, generating all necessary datasets for the other scripts.
 
 All data should be generated automatically by the scripts.
 
