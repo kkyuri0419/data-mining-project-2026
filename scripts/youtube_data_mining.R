@@ -2,6 +2,7 @@ install.packages("tuber")
 install.packages("jsonlite")
 library(tuber)
 library(tidyverse)
+library(tidytext)
 library(jsonlite)
 library(httr)
 
@@ -202,6 +203,7 @@ View(trump_data)
 trump_data %>%
   count(ideology)
 
+write.csv(trump_data, "data_preprocessed/trump_data.csv")
 
 
 # 06  Text Preprocessing --------------------------------------------------
@@ -257,3 +259,16 @@ tfidf %>%
   slice_max(tf_idf, n = 10) %>%
   print (n = 35)
 
+write_csv(tfidf, "data_analysis/tfidf_title_only.csv")
+
+# 08 Compute Sentiment by Ideology ----
+
+# Use a lexicon-based approach to compare positive and negative emotional language across ideological groups.
+bing <- get_sentiments("bing")
+
+sentiment_scores_title <- tokens %>%
+  inner_join(bing, by = "word") %>%
+  count(ideology, sentiment)
+
+View(sentiment_scores_title)
+write_csv(sentiment_scores_title, "data_analysis/sentiment_scores_title_only.csv")

@@ -15,13 +15,13 @@ library(widyr)
 
 
 # 01 Channel-Level aggragation --------------------------------------------
-trump_videos <- read_csv("data_preprocessed/trump_videos.csv")
+video_data <- read_csv("data_raw/full_video_comments_raw_wo_keyword.csv")
 
 # Aggregate video titles by channel and ideology
-channel_docs <- trump_videos %>%
+channel_docs <- video_data %>%
   group_by(channel_id, ideology) %>%
   summarise(
-    text = paste(title, collapse = " "),
+    text = paste(title, comment_text, collapse = " "),
     n_videos = n(),
     .groups = "drop"
   )

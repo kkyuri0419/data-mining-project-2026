@@ -169,6 +169,7 @@ video_docs_wo_keyword <- video_comments_full_wo_keyword %>%
 glimpse(video_docs_wo_keyword)
 View(video_docs_wo_keyword)
 
+write_csv(video_docs_wo_keyword, "data_preprocessed/video_doc_comments_nokeyword.csv")
 
 
 # 09 Tokenize the Text Data ----
@@ -200,10 +201,11 @@ custom_stopwords <- tibble::tibble(
     "fox news", "rebel news", "patti smith", "amy goodman",
     "tommy robinson", "reza pahlavi", "ken paxton",
     "flávio bolsonaro", "tiger woods", "amy juan", "lies lies",
+    "da da","epstein files",
     
     # media / format
     "meidastouch podcast", "panel featuring", "quot panel",
-    "delivers remarks",
+    "delivers remarks", "alex jones", "bill maher",
     
     # names
     "michael stipe", "mark carney", "michael knowles",
@@ -265,7 +267,7 @@ ideology_tfidf_wo_keyword %>%
   slice_max(tf_idf, n = 10) %>%
   print(n = 35)
 
-write_csv(ideology_tfidf_wo_keyword, "data_raw/ideology_tfidf_wo_keywordd.csv")
+write_csv(ideology_tfidf_wo_keyword, "data_analysis/nokeyword_title_comments/nokeyword_comments_tfidf_bigram.csv")
 
 
 # 11 Compute Sentiment by Ideology ----
@@ -278,4 +280,4 @@ sentiment_scores_wo_keyword <- unigram_tokens_clean_wo_keyword %>%
   count(ideology, sentiment)
 
 View(sentiment_scores_wo_keyword)
-write_csv(sentiment_scores_wo_keyword, "data_preprocessed/sentiment_scores_without_specific_keyword.csv")
+write_csv(sentiment_scores_wo_keyword, "data_analysis/nokeyword_title_comments/nokeyword_title_commments_sentiment_scores.csv")
